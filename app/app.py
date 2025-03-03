@@ -121,7 +121,6 @@ def process_request(project_name):
         return redirect(url_for('index', project_name=project_name))
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    logger.info(f"Starting Flask application on port {port}")
-    app.run(host='0.0.0.0', port=port)
+    logger.info(f"Starting Flask application")
+    app.run(host='0.0.0.0', port=5000)
 
