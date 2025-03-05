@@ -54,6 +54,17 @@ def validate_totp(code):
 def root():
     return render_template('landing.html')
 
+@app.route('/redirect')
+def redirect_to_challenge():
+    code_challenge = request.args.get('code_challenge')
+    if code_challenge:
+        # Ensure the "code_challenge_" prefix is present
+        if not code_challenge.startswith("code_challenge_"):
+            code_challenge = f"code_challenge_{code_challenge}"
+        return redirect(url_for('index', project_name=code_challenge))
+    return redirect(url_for('root'))
+
+
 @app.route('/<project_name>')
 def index(project_name):
     return render_template('index.html', project_name=project_name)

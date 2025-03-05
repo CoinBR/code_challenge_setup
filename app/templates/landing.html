@@ -21,22 +21,43 @@
         h2 {
             margin-top: 0;
         }
-        a {
-            display: inline-block;
+        form {
+            display: flex;
+            align-items: center;
+        }
+        label {
+            margin-right: 10px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 8px;
+            margin-right: 10px;
+            box-sizing: border-box;
+        }
+        input[type="submit"] {
             background-color: #4CAF50;
             color: white;
             padding: 10px 15px;
-            text-decoration: none;
+            border: none;
             border-radius: 4px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
         }
     </style>
 </head>
 <body>
     <h1>Code Challenge Generator</h1>
     
-    <p>send the code challenge name in the URL</p>
-    
-
+    <div class="challenge-box">
+        <p>Write the code challenge repo name here:</p>
+        <form action="/redirect" method="GET">
+            <label for="code_challenge">code_challenge_</label>
+            <input type="text" id="code_challenge" name="code_challenge" required>
+            <input type="submit" value="Generate">
+        </form>
+    </div>
 </body>
 </html>
 
