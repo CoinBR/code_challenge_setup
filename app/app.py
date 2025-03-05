@@ -60,8 +60,9 @@ def root():
 def redirect_to_challenge():
     candidate_name = request.args.get('candidate_name')
     code_challenge = request.args.get('code_challenge')
+    code_challenge = code_challenge.replace('https://github.com/CoinBR/', '')
+
     if code_challenge:
-        # Ensure the "code_challenge_" prefix is present
         if not code_challenge.startswith("code_challenge_"):
             code_challenge = f"code_challenge_{code_challenge}"
         return redirect(url_for('index', project_name=code_challenge, candidate_name=candidate_name))
