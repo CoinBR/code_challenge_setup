@@ -23,15 +23,20 @@
         }
         form {
             display: flex;
+            flex-direction: column;
+        }
+        .form-group {
+            display: flex;
             align-items: center;
+            margin-bottom: 10px;
         }
         label {
+            width: 150px;
             margin-right: 10px;
         }
         input[type="text"] {
             flex: 1;
             padding: 8px;
-            margin-right: 10px;
             box-sizing: border-box;
         }
         input[type="submit"] {
@@ -45,18 +50,41 @@
         input[type="submit"]:hover {
             background-color: #45a049;
         }
+        .logs-link {
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .logs-link a {
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .logs-link a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <h1>Code Challenge Generator</h1>
     
     <div class="challenge-box">
-        <p>Write the code challenge repo name here:</p>
+        <h2>Generate a Code Challenge</h2>
+        <p>Generate a code challenge for the candidate:</p>
         <form action="/redirect" method="GET">
-            <label for="code_challenge">code_challenge_</label>
-            <input type="text" id="code_challenge" name="code_challenge" required>
+            <div class="form-group">
+                <label for="candidate_name">Candidate Name</label>
+                <input type="text" id="candidate_name" name="candidate_name" required>
+            </div>
+            <div class="form-group">
+                <label for="code_challenge">Code Challenge</label>
+                <input type="text" id="code_challenge" name="code_challenge" required>
+            </div>
             <input type="submit" value="Generate">
         </form>
+        <div class="logs-link">
+            <a href="/logs">Check Latest Submissions</a>
+        </div>
     </div>
 </body>
 </html>

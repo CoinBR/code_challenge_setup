@@ -111,6 +111,7 @@
     </div>
 
     <form id="challengeForm" method="POST" action="/{{ project_name }}/generate">
+       <input type="hidden" name="candidate_name" value="{{ candidate_name }}">
        <div>
             <label for="github_url">Your GitHub Repository URL:</label>
             <input type="text" id="github_url" name="github_url" placeholder="https://github.com/username/repository" required>

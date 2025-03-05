@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logged Entries</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h1>Logged Entries</h1>
+    <table>
+        <tr>
+            <th>Timestamp</th>
+            <th>Candidate</th>
+            <th>Repo Link</th>
+        </tr>
+        {% for entry in log_entries %}
+        <tr>
+            <td>{{ entry.timestamp }}</td>
+            <td>{{ entry.candidate_name }}</td>
+            <td><a href="{{ entry.repo_link}}">{{entry.repo_link}}</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
+

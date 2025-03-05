@@ -26,6 +26,8 @@ TEMP_DIR = "/tmp/code_challenge_setup"
 os.makedirs(TEMP_DIR, exist_ok=True)
 logger.info(f"Using temporary directory: {TEMP_DIR}")
 
+log_entries = []
+
 def cleanup_temp_files():
     while True:
         try:
@@ -56,29 +58,38 @@ def root():
 
 @app.route('/redirect')
 def redirect_to_challenge():
+    candidate_name = request.args.get('candidate_name')
     code_challenge = request.args.get('code_challenge')
     if code_challenge:
         # Ensure the "code_challenge_" prefix is present
         if not code_challenge.startswith("code_challenge_"):
             code_challenge = f"code_challenge_{code_challenge}"
-        return redirect(url_for('index', project_name=code_challenge))
+        return redirect(url_for('index', project_name=code_challenge, candidate_name=candidate_name))
     return redirect(url_for('root'))
-
 
 @app.route('/<project_name>')
 def index(project_name):
-    return render_template('index.html', project_name=project_name)
+    candidate_name = request.args.get('candidate_name')
+    return render_template('index.html', project_name=project_name, candidate_name=candidate_name)
 
 @app.route('/<project_name>/generate', methods=['POST'])
 def process_request(project_name):
     totp_code = request.form.get('totp_code')
-    github_url = request.form.get('github_url')
+    clone_url = request.form.get('github_url')
+    candidate_name = request.form.get('candidate_name')
     
     if not totp_code or not validate_totp(totp_code):
         flash('Invalid verification code. Please try again.', 'error')
-        return redirect(url_for('index', project_name=project_name))
+        return redirect(url_for('index', project_name=project_name, candidate_name=candidate_name))
     
     try:
+        repo_link = convert_to_github_link(clone_url)
+        timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+        log_entries.insert(0, {'repo_link': repo_link, 'candidate_name': candidate_name, 'timestamp': timestamp})
+        if len(log_entries) > 300:
+            log_entries.pop()
+        logger.info(f"Logged entry: {log_entries[0]}")
+        
         logger.info("Creating a unique temporary directory")
         temp_dir = tempfile.mkdtemp(dir=TEMP_DIR)
         
@@ -95,18 +106,17 @@ def process_request(project_name):
                            cwd=repo_dir, check=True)
             
             clone_script = os.path.join(repo_dir, 'submodules', 'clone_and_claim', 'run.sh')
-            logger.info(f"Running script: {clone_script} with URL: {github_url}")
+            logger.info(f"Running script: {clone_script} with URL: {clone_url}")
             os.chmod(clone_script, 0o755)
-            subprocess.run([clone_script, github_url], cwd=repo_dir, check=True)
+            subprocess.run([clone_script, clone_url], cwd=repo_dir, check=True)
             
             logger.info("Creating tar.gz file with timestamp to ensure uniqueness")
-            timestamp = int(time.time())
-            archive_path = os.path.join(TEMP_DIR, f"{project_name}_{timestamp}.tar.gz")
+            archive_path = os.path.join(TEMP_DIR, f"{project_name}_{int(time.time())}.tar.gz")
             
             shutil.make_archive(
                 archive_path[:-7],  # remove '.tar.gz' from the base name
                 'gztar',  # use tar.gz format
-                root_dir=temp_dir  
+                root_dir=temp_dir 
             )
 
             logger.info(f"Temporary directory contents archived to {archive_path}")
@@ -125,13 +135,27 @@ def process_request(project_name):
             if os.path.exists(temp_dir):
                 shutil.rmtree(temp_dir)
             raise e
-            
+        
     except Exception as e:
         logger.error(f"Failed to process request: {str(e)}")
         flash(f'An error occurred: {str(e)}', 'error')
-        return redirect(url_for('index', project_name=project_name))
+        return redirect(url_for('index', project_name=project_name, candidate_name=candidate_name))
+
+@app.route('/logs')
+def view_logs():
+    return render_template('logs.html', log_entries=log_entries)
+
+def convert_to_github_link(clone_url):
+    if clone_url.startswith('git@github.com:'):
+        return clone_url.replace('git@github.com:', 'https://github.com/').replace('.git', '')
+    if clone_url.startswith('https://github.com/'):
+        return clone_url.replace('.git', '')
+    # If it's already a project link or unknown format, leave it as is
+    return clone_url  
+
 
 if __name__ == '__main__':
     logger.info(f"Starting Flask application")
     app.run(host='0.0.0.0', port=5000)
+
 
