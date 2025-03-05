@@ -102,11 +102,7 @@ def process_request(project_name):
             logger.info("Changing into the repo directory")
             repo_dir = os.path.join(temp_dir, project_name)
             
-            logger.info("Initializing and updating git submodules recursively")
-            subprocess.run(['git', 'submodule', 'update', '--init', '--recursive', '--remote'],
-                           cwd=repo_dir, check=True)
-            
-            clone_script = os.path.join(repo_dir, 'submodules', 'clone_and_claim', 'run.sh')
+            clone_script = os.path.join('/app/', 'clone_and_claim.sh')
             logger.info(f"Running script: {clone_script} with URL: {clone_url}")
             os.chmod(clone_script, 0o755)
             subprocess.run([clone_script, clone_url], cwd=repo_dir, check=True)
