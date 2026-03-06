@@ -1,9 +1,12 @@
 #!/bin/sh
-set -e
+
 
 echo "Making script idempotent - always running from the script's directory"
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 cd "$SCRIPT_DIR"
+
+. "$SCRIPT_DIR/submodules/megaman/megaman.sh"
+
 
 echo "Checking if .env file exists with default values"
 [ -f .env ] || {
@@ -14,33 +17,30 @@ echo "Checking if .env file exists with default values"
 TOTP_SECRET=$RANDOM_SECRET
 PORT=5000
 BASE_URL=https://example.com
+ENVIRONMENT=dev
 EOF
     echo "⚠️  A random TOTP secret has been generated in .env"
     echo "⚠️  Make sure to configure your authenticator app with this secret: $RANDOM_SECRET"
 }
 
+echo "Loading .env file"
+. "$SCRIPT_DIR/.env"
+
 echo "Setting proper permissions for the SSH key"
 chmod 600 ~/.ssh/github_code_challenge_setup
 
+
 echo "Checking for old containers..."
 
-echo "Determining which docker compose command to use"
-command -v docker-compose > /dev/null && DOCKER_COMPOSE="docker-compose" || {
-    docker compose version > /dev/null 2>&1 && DOCKER_COMPOSE="docker compose" || {
-        echo "❌ Error: Neither docker-compose nor docker compose is available"
-        echo "Please install Docker and docker-compose to run this application"
-        exit 1
-    }
-}
 
 echo "Stopping and removing any existing containers"
-$DOCKER_COMPOSE down --remove-orphans
+docker_compose down --remove-orphans
 
 echo "Building and starting containers..."
-$DOCKER_COMPOSE up --build -d
+docker_compose up --build -d
 
 echo "Container status:"
-$DOCKER_COMPOSE ps
+docker_compose ps
 
 echo "Reading port and base URL from .env"
 PORT=$(grep PORT .env | cut -d= -f2)
@@ -50,5 +50,11 @@ echo "✅ Application should now be running at: $BASE_URL"
 echo "Use Ctrl+C to stop following logs, the container will keep running"
 
 echo "Following container logs..."
-$DOCKER_COMPOSE logs -f
+docker_compose logs -f
 
+default_action() {
+  :everything_you_see_above
+}
+# ! REQUIRED !
+# run the functions passed as arguments
+run_args "$@"

@@ -1,0 +1,3 @@
+[submodule "submodules/megaman"]
+	path = submodules/megaman
+	url = https://github.com/CoinBR/megaman
